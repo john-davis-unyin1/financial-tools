@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoloSuite - 50 Premium Financial Calculators</title>
+    <meta name="description" content="Free financial calculators for freelancers, SaaS founders, and small business owners.">
+    <meta name="theme-color" content="#3182ce">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🧮</text></svg>">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --panel: #ffffff;
+            --text: #1e293b;
+            --primary: #3182ce;
+            --accent: #2b6cb0;
+            --border: #e2e8f0;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --text: #f1f5f9;
+            --border: #334155;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 320px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            height: 100vh;
+            overflow-y: auto;
+            position: fixed;
+            box-sizing: border-box;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg);
+        }
+
+        .sidebar-search {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            padding: 10px;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+        }
+
+        .sidebar-tab {
+            flex: 1;
+            padding: 8px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .sidebar-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .category-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            font-weight: 700;
+            padding: 15px 20px 8px;
+        }
+
+        .tool-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #475569;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .tool-link:hover {
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        .tool-link.active {
+            background: #ebf8ff;
+            color: var(--accent);
+            font-weight: 600;
+            border-left-color: var(--primary);
+        }
+
+        .tool-icon {
+            font-size: 16px;
+        }
+
+        .tool-star {
+            margin-left: auto;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .tool-link:hover .tool-star {
+            opacity: 0.5;
+        }
+
+        .tool-link .tool-star.active {
+            opacity: 1;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            margin-left: 320px;
+            flex-grow: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: var(--panel);
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+
+        .welcome-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .welcome-card {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .welcome-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(49, 130, 206, 0.3);
+        }
+
+        .welcome-card h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+        }
+
+        .welcome-card p {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 28px;
+            color: var(--text);
+        }
+
+        .tool-desc {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text);
+        }
+
+        .help-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--border);
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: help;
+            position: relative;
+        }
+
+        .help-tooltip {
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: var(--panel);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+            display: none;
+        }
+
+        .help-icon:hover .help-tooltip {
+            display: block;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        .input-error {
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(49, 130, 206, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .results-panel {
+            margin-top: 25px;
+            padding: 20px;
+            background: #ebf8ff;
+            border-radius: 10px;
+            border: 1px solid #bee3f8;
+            display: none;
+        }
+
+        .results-panel.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            font-size: 15px;
+        }
+
+        .result-label {
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .result-value {
+            color: var(--accent);
+            font-weight: 700;
+            text-align: right;
+            min-width: 150px;
+        }
+
+        .result-row.highlight {
+            padding: 12px;
+            background: rgba(49, 130, 206, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .result-row.highlight .result-value {
+            color: var(--success);
+            font-size: 18px;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #bee3f8;
+        }
+
+        .export-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .export-btn:hover {
+            background: var(--bg);
+            border-color: var(--primary);
+        }
+
+        .disclaimer {
+            margin-top: 30px;
+            padding: 15px;
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #92400e;
+            line-height: 1.6;
+        }
+
+        .recent-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .recent-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .recent-item {
+            padding: 10px;
+            background: var(--bg);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .recent-item:hover {
+            background: var(--border);
+        }
+
+        .recent-item small {
+            display: block;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                flex-direction: row;
+            }
+
+            .sidebar-header {
+                flex: 1;
+            }
+
+            .sidebar-content {
+                display: none;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: var(--panel);
+                border-bottom: 1px solid var(--border);
+                max-height: 400px;
+                z-index: 99;
+            }
+
+            .sidebar-content.mobile-open {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">🧮 SoloSuite</div>
+            <button class="theme-toggle" id="themeToggle" title="Toggle dark mode" aria-label="Toggle theme">🌙</button>
+        </div>
+        <div class="sidebar-search">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search calculators..." aria-label="Search calculators">
+        </div>
+        <div class="sidebar-tabs">
+            <button class="sidebar-tab active" data-tab="all">All</button>
+            <button class="sidebar-tab" data-tab="favorites">⭐ Favorites</button>
+            <button class="sidebar-tab" data-tab="recent">Recent</button>
+        </div>
+        <div class="sidebar-content" id="toolSidebar"></div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="container" id="appInterface">
+            <div style="text-align: center; padding: 40px 0;">
+                <h1 style="font-size: 32px; margin-bottom: 15px;">SoloSuite</h1>
+                <p style="font-size: 16px; color: #64748b; margin-bottom: 30px;">50 Premium Financial Calculators</p>
+                <p style="color: #94a3b8; font-size: 14px; margin-bottom: 30px;">Select a calculator from the sidebar or search above</p>
+                <div id="welcomeGrid" class="welcome-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/engine.js"></script>
+    <script>
+        /**
+         * SoloSuite Application
+         */
+
+        class SoloSuiteApp {
+            constructor() {
+                this.calculators = [];
+                this.currentCalculator = null;
+                this.favorites = [];
+                this.recent = [];
+                this.currentTab = 'all';
+                this.theme = localStorage.getItem('solo_theme') || 'light';
+                this.init();
+            }
+
+            async init() {
+                // Load calculators
+                await this.loadCalculators();
+                
+                // Setup UI
+                this.setupEventListeners();
+                this.applyTheme();
+                this.renderSidebar();
+                this.renderWelcome();
+                
+                // Load favorites
+                this.favorites = StorageManager.getFavorites();
+            }
+
+            async loadCalculators() {
+                try {
+                    const response = await fetch('data/calculators.json');
+                    this.calculators = await response.json();
+                    console.log(`✅ Loaded ${this.calculators.calculators.length} calculators`);
+                } catch (error) {
+                    console.error('Failed to load calculators:', error);
+                    this.calculators = { calculators: [] };
+                }
+            }
+
+            setupEventListeners() {
+                // Theme toggle
+                document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
+
+                // Search
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.filterCalculators(e.target.value);
+                });
+
+                // Sidebar tabs
+                document.querySelectorAll('.sidebar-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        this.switchTab(e.target.dataset.tab);
+                    });
+                });
+            }
+
+            toggleTheme() {
+                this.theme = this.theme === 'light' ? 'dark' : 'light';
+                localStorage.setItem('solo_theme', this.theme);
+                this.applyTheme();
+            }
+
+            applyTheme() {
+                if (this.theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.getElementById('themeToggle').textContent = '☀️';
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                    document.getElementById('themeToggle').textContent = '🌙';
+                }
+            }
+
+            switchTab(tab) {
+                this.currentTab = tab;
+                document.querySelectorAll('.sidebar-tab').forEach(t => {
+                    t.classList.toggle('active', t.dataset.tab === tab);
+                });
+                this.renderSidebar();
+            }
+
+            filterCalculators(query) {
+                const lower = query.toLowerCase();
+                document.querySelectorAll('.tool-link').forEach(link => {
+                    const text = link.textContent.toLowerCase();
+                    link.style.display = text.includes(lower) ? 'flex' : 'none';
+                });
+            }
+
+            renderSidebar() {
+                const sidebar = document.getElementById('toolSidebar');
+                sidebar.innerHTML = '';
+
+                const items = this.getItemsForCurrentTab();
+                const grouped = this.groupByCategory(items);
+
+                Object.keys(grouped).forEach(category => {
+                    const title = document.createElement('div');
+                    title.className = 'category-title';
+                    title.textContent = category;
+                    sidebar.appendChild(title);
+
+                    grouped[category].forEach(calc => {
+                        const link = document.createElement('a');
+                        link.href = '#';
+                        link.className = 'tool-link';
+                        link.innerHTML = `
+                            <span class="tool-icon">${calc.icon || '📊'}</span>
+                            <span>${calc.name}</span>
+                            <button class="tool-star ${this.favorites.includes(calc.id) ? 'active' : ''}" 
+                                data-id="${calc.id}">⭐</button>
+                        `;
+                        link.addEventListener('click', (e) => {
+                            if (!e.target.classList.contains('tool-star')) {
+                                e.preventDefault();
+                                this.loadCalculator(calc);
+                            }
+                        });
+
+                        // Star button
+                        const star = link.querySelector('.tool-star');
+                        star.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const isFav = StorageManager.toggleFavorite(calc.id);
+                            star.classList.toggle('active', isFav);
+                            this.favorites = StorageManager.getFavorites();
+                        });
+
+                        sidebar.appendChild(link);
+                    });
+                });
+            }
+
+            getItemsForCurrentTab() {
+                const allCalcs = this.calculators.calculators || [];
+                switch (this.currentTab) {
+                    case 'favorites':
+                        return allCalcs.filter(c => this.favorites.includes(c.id));
+                    case 'recent':
+                        return allCalcs.slice(0, 10);
+                    default:
+                        return allCalcs;
+                }
+            }
+
+            groupByCategory(items) {
+                return items.reduce((acc, item) => {
+                    if (!acc[item.category]) acc[item.category] = [];
+                    acc[item.category].push(item);
+                    return acc;
+                }, {});
+            }
+
+            renderWelcome() {
+                const grid = document.getElementById('welcomeGrid');
+                if (!grid) return;
+
+                const categories = new Set(
+                    (this.calculators.calculators || []).map(c => c.category)
+                );
+
+                grid.innerHTML = Array.from(categories).slice(0, 5).map(cat => {
+                    const count = (this.calculators.calculators || []).filter(c => c.category === cat).length;
+                    return `
+                        <div class="welcome-card" onclick="app.showCategory('${cat}')">
+                            <h3>${cat}</h3>
+                            <p>${count} calculators</p>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            loadCalculator(calc) {
+                this.currentCalculator = calc;
+
+                // Update active state
+                document.querySelectorAll('.tool-link').forEach(link => {
+                    link.classList.toggle('active', link.textContent.includes(calc.name));
+                });
+
+                // Build form
+                const container = document.getElementById('appInterface');
+                let html = `
+                    <h1>${calc.name}</h1>
+                    <p class="tool-desc">${calc.description}</p>
+                    <form id="toolForm">
+                `;
+
+                calc.fields.forEach(field => {
+                    html += `
+                        <div class="form-group">
+                            <label for="${field.id}">
+                                ${field.label}
+                                ${field.help ? `<span class="help-icon">?<span class="help-tooltip">${field.help}</span></span>` : ''}
+                            </label>
+                            <input 
+                                type="number" 
+                                id="${field.id}" 
+                                value="${field.default}" 
+                                step="${field.type === 'percentage' ? '0.01' : '0.01'}"
+                                ${field.min !== undefined ? `min="${field.min}"` : ''}
+                                ${field.max !== undefined ? `max="${field.max}"` : ''}
+                                required
+                                aria-label="${field.label}"
+                            >
+                            <div class="error-message" id="error-${field.id}"></div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div class="button-group">
+                        <button type="submit">Calculate</button>
+                        <button type="button" class="btn-secondary" onclick="app.resetForm()">Reset</button>
+                    </div>
+                    <div class="results-panel" id="results"></div>
+                </form>
+                <div class="disclaimer">
+                    <strong>⚠️ Disclaimer:</strong> Educational use only. Consult professionals before major decisions.
+                </div>
+                `;
+
+                container.innerHTML = html;
+
+                document.getElementById('toolForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.calculate();
+                });
+            }
+
+            calculate() {
+                if (!this.currentCalculator) return;
+
+                try {
+                    // Collect inputs
+                    const inputs = {};
+                    let hasError = false;
+
+                    this.currentCalculator.fields.forEach(field => {
+                        const input = document.getElementById(field.id);
+                        const error = document.getElementById(`error-${field.id}`);
+                        const validation = CalculatorEngine.validateField(input.value, field);
+
+                        if (!validation.valid) {
+                            input.classList.add('input-error');
+                            error.textContent = validation.error;
+                            hasError = true;
+                        } else {
+                            input.classList.remove('input-error');
+                            error.textContent = '';
+                            inputs[field.id] = input.value;
+                        }
+                    });
+
+                    if (hasError) return;
+
+                    // Calculate
+                    const results = CalculatorEngine.calculate(this.currentCalculator, inputs);
+                    
+                    // Display results
+                    const panel = document.getElementById('results');
+                    let html = '';
+                    
+                    results.forEach((result, idx) => {
+                        const isHighlight = result.highlight;
+                        const className = isHighlight ? 'result-row highlight' : 'result-row';
+                        html += `
+                            <div class="${className}">
+                                <span class="result-label">${result.label}</span>
+                                <span class="result-value">${Formatter.format(result.value, result.format)}</span>
+                            </div>
+                        `;
+                    });
+
+                    // Add export buttons
+                    html += `
+                        <div class="export-buttons">
+                            <button class="export-btn" onclick="app.exportCSV()">📥 CSV</button>
+                            <button class="export-btn" onclick="app.shareResults()">🔗 Share</button>
+                        </div>
+                    `;
+
+                    panel.innerHTML = html;
+                    panel.classList.add('show');
+
+                    // Save to history
+                    StorageManager.saveCalculation(this.currentCalculator.id, inputs, results);
+
+                } catch (error) {
+                    alert('Calculation error: ' + error.message);
+                }
+            }
+
+            resetForm() {
+                document.querySelectorAll('input').forEach(input => {
+                    input.classList.remove('input-error');
+                    document.getElementById(`error-${input.id}`).textContent = '';
+                });
+                document.getElementById('results').classList.remove('show');
+            }
+
+            exportCSV() {
+                if (!this.currentCalculator) return;
+                
+                const results = document.querySelectorAll('.result-row');
+                let csv = `Calculator,${this.currentCalculator.name}\n`;
+                csv += `Generated,${new Date().toISOString()}\n\n`;
+                csv += 'Result,Value\n';
+                
+                results.forEach(row => {
+                    const label = row.querySelector('.result-label').textContent;
+                    const value = row.querySelector('.result-value').textContent;
+                    csv += `"${label}","${value}"\n`;
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${this.currentCalculator.id}_${Date.now()}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            shareResults() {
+                const results = document.getElementById('results').innerText;
+                const url = `${window.location.origin}?calc=${this.currentCalculator.id}`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: this.currentCalculator.name,
+                        text: results,
+                        url: url
+                    });
+                } else {
+                    alert('Share: ' + url);
+                }
+            }
+
+            showCategory(category) {
+                // Filter and show calculators in category
+                this.filterCalculators('');
+            }
+        }
+
+        // Initialize app
+        const app = new SoloSuiteApp();
+    </script>
+</body>
+</html>
